@@ -1,0 +1,110 @@
+---
+title: "Midterm"
+author: "Ronan Sharp"
+date: "2024-03-25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Part 1 & 3
+
+```{r part 1}
+
+ library(devtools)
+    library(ggpubr)
+    library(jpeg)
+    library(tidyverse)
+    library(nbastatR)
+library(ggthemes)
+    plot_bucks_season = function(i){
+      Sys.setenv("VROOM_CONNECTION_SIZE" = 131072 * 2)
+      img <- readJPEG("CourtImage.jpeg")# reads in the image of a court
+    bucks_data = teams_shots(team_ids ="1610612749", seasons = 2000+i)#sets up the data for the 200i'th year from the bucks
+    
+    buck_plot = ggplot(data = bucks_data) +#makes a plot with that data
+      annotation_raster(img, xmin = -27, ymin = -5, xmax = 27, ymax = 45)+ #rescales the image to line up with the plot
+      
+      geom_point(mapping = aes(x = locationX/10, y = locationY/10, color=isShotMade, alpha = .5))+ #scales them to feet and adds color to differentiate between misses and hits. I'm assuming that they used 1/10th feet for the data because the max was 250 and the court is 50ft wide and scaled accordingly
+      ggtitle("Shot locations and accuracy of the Milwaukee Buck's")+#adds a title
+      xlab("")+# removes the axis data
+      ylab("")+
+      theme_economist_white()+
+      scale_color_manual(name = "Accuracy", values = c("#00471B", "#0077C0"), labels = c("Missed Shot", "Point Scored"))+ #adds colors and labels legend correctly
+      guides(alpha = FALSE)#removes legend for opacity due to redundancy
+    print(buck_plot)
+    }
+    for(i in 1:20){
+  Bucks_plot = plot_bucks_season(i)#runs the program for the years 2000 through 2020
+}
+    ```
+Part 2
+
+
+
+-This graph shows the general trends of where the shots are taken
+-One trend is that the amount of shots taken between the freethrow line and the 3 point line has decreased over the last 20
+- this trend happened pretty drastically in 2018-2019
+-players tend to either move forward or move back when in between these positions and it creates a fairly obvious ring
+-scoring tends to happen at the 3 point line or closer and a miniscule amount happens further out which is most likely outliers
+-There is also a clump on the far edges of every graph showing that players prefer to shoot from the side as opposed to at an angle
+
+-the drastic change in where people shoot that happened in 2018-19 goes along with the rule change that happened in which the 3 point line was moved back encouraging players to stop earlier or just keep going if they lack confidence in a long range shot. this lines up with the data found in the graphs
+-The general curve found in all of the graphs detailing the curve along the 3 point line shows clearly that players prefer to shoot exactly on that line or as close as possible to make it as easy as possible to shoot and that players consistently are confident enough to shoot from there as opposed to coming in closer or making the shot earlier. 
+- the shooting from the sides lines up with basketball strategy because it is a shorter distance by a small amount and it is harder to cover defensively. the data found shows that players/coaches know this and will shoot from there more often than other places.
+
+
+
+part 4 
+```{r part 3}
+
+bucks_data2 = teams_shots(team_ids ="1610612749", seasons = 2000)#sets up the data for the 2000th year from the bucks
+bucks_data2['total_distance'] = sqrt(bucks_data2['locationX']**2 + bucks_data2['locationY'] ** 2) #adds a column with the total distance from the goal using pythagoream theorum "there is no answer"
+bucks_data2
+print(quantile(bucks_data2$total_distance, probs = .99)) #finds the line with the 99th percentile at 271.8 which I will round to 272
+
+
+
+
+data3 = tibble(X_coord = c(-250:-1,1:250)) #makes a data range going from -250 to 250
+data3['Y_coord'] = sqrt((272**2)-(data3['X_coord']**2)) #adds a y column to make the total distance 270
+
+
+
+
+
+
+
+
+
+plot_bucks_season_4pt = function(i){
+img <- readJPEG("CourtImage.jpeg")# reads in the image of a court
+    Sys.setenv("VROOM_CONNECTION_SIZE" = 131072 * 2)
+    bucks_data = teams_shots(team_ids ="1610612749", seasons = 2000+i)#sets up the data for the 200i'th year from the bucks
+    bucks_data
+    buck_plot = ggplot(data = bucks_data) +#makes a plot with that data
+      annotation_raster(img, xmin = -27, ymin = -5, xmax = 27, ymax = 45)+
+      theme_economist_white()+
+      geom_point(mapping = aes(x = locationX/10, y = locationY/10, color=isShotMade, alpha = .5))+ #scales them to feet and adds color to differentiate between misses and hits. I'm assuming that they used 1/10th feet for the data because the max was 250 and the court is 50ft wide
+      ggtitle("Shot locations and accuracy of the Milwaukee Buck's")+#adds a title
+      xlab("")+# removes the axis data
+      ylab("")+
+      scale_color_manual(name = "Accuracy", values = c("#00471B", "#0077C0"), labels = c("Missed Shot", "Point Scored"))+ #adds colors and labels legend correctly
+      guides(alpha = FALSE)+#removes legend for opacity due to redundancy
+  geom_point(data = data3, mapping = aes(X_coord/10,Y_coord/10)) #adds the new curve to the data creating a 90th percentile line
+    print(buck_plot)
+}
+
+    for(i in 1:20){
+  Bucks_plot = plot_bucks_season_4pt(i)#runs the program for the years 2000 through 2020
+}
+
+
+
+
+```
+
+Part 4 text
+The new 4 point line would go at around 27ft away from the net and would intersect with the sides of the court at around 10ft. assuming that this 4 point line was created in 2000 it would have been put in at the 90th percentile of shots for that year and the following years the score distribution would have changed dramatically with the general curve seen in the data probably being pushed out to the curve and changing the strategy immensely. I view this as a negative change because the game has probably already been balanced quite well and they would have added a 4 point line if they thought it would make the game more exciting and fans would like it.
